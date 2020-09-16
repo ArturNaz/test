@@ -22,9 +22,12 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import Button from './components/Button';
+import Toast from './components/Toast';
+import Lightbox from 'react-native-lightbox-v2';
 import LottieView from 'lottie-react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import ResultAnimation from "./components/ResultAnimation";
 const MOCKY_DATA =
   'https://run.mocky.io/v3/7268b856-16d9-42ab-9e69-53d41bf9666d';
 const MOCKY_SEND =
@@ -34,6 +37,7 @@ export default class App extends Component {
     load: false,
     data: {},
     select: null,
+    win:null,
   };
   animation = null;
 
@@ -67,13 +71,15 @@ export default class App extends Component {
 
   onChoiceSelect = (index) => {
     if (this.state.select === null) {
-      this.setState({select: index});
-      setTimeout(()=>this.animation && this.animation.play(),500)
+      const win = index === this.state.data.quiz.answer;
+      win && this.toast.fadeIn();
+      this.setState({select: index, win});
+      setTimeout(()=>this.animation && this.animation.play(0,200),500)
     }
   };
   checkChoice = (select, index, isTitle = false) => {
     const answer = this.state.data.quiz.answer;
-    if (select === index && index === answer) {
+    if (select !== null && index === answer) {
       return isTitle ? styles.choiceTitleSuccess : styles.choiceSuccess;
     } else if (select === index && index !== answer) {
       return isTitle ? styles.choiceTitleWrong : styles.choiceWrong;
@@ -84,6 +90,7 @@ export default class App extends Component {
     const {
       load,
       select,
+        win,
       data: {text, image, quiz, video, input},
     } = this.state;
     if (!load) {
@@ -102,7 +109,6 @@ export default class App extends Component {
               justifyContent: 'center',
               paddingHorizontal: 12,
             }}
-            //style={{backgroundColor: 'red',flex:1}}
             contentInsetAdjustmentBehavior="automatic"
             getTextInputRefs={() => {
               return [this._textInputRef];
@@ -116,16 +122,20 @@ export default class App extends Component {
                   play={false}
                   videoId={this.getCode(video.content)}
                 />
-                <Image
-                  style={{width: '100%', aspectRatio: 1.8}}
-                  resizeMode="cover"
-                  source={{uri: image.content}}
-                />
+                <Lightbox underlayColor="white">
+                  <Image
+                      style={{ flex: 1,
+                        height: 150,}}
+                      resizeMode="contain"
+                      source={{uri: image.content}}
+                  />
+                </Lightbox>
                 <Text style={styles.sectionDescription}>{text.content}</Text>
               </View>
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>{quiz.title}</Text>
                 <Text style={styles.sectionDescription}>{quiz.content}</Text>
+                 <ResultAnimation result={win}/>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -149,13 +159,7 @@ export default class App extends Component {
                       </Text>
                     </TouchableOpacity>
                   ))}
-                  {select !== null && <LottieView
-                      style={{position:'absolute',height:'100%',width:'100%', backgroundColor:'rgba(33,35,42,0.08)'}}
-                      ref={(animation) => {
-                        this.animation = animation;
-                      }}
-                      source={require('./assets/animation/fireworks')}
-                  />}
+
                 </View>
               </View>
               <View style={styles.sectionContainer}>
@@ -182,11 +186,12 @@ export default class App extends Component {
                     fontSize: 18,
                     fontWeight: '600',
                   }}>
-                  send
+                  complete
                 </Text>
               </Button>
             </View>
           </KeyboardAwareScrollView>
+          <Toast ref={ref => this.toast = ref}/>
         </SafeAreaView>
       </>
     );
@@ -207,6 +212,7 @@ const styles = StyleSheet.create({
     minHeight: 150,
     width: '100%',
     justifyContent: 'flex-start',
+    textAlignVertical: "top"
   },
   scrollView: {},
   body: {
@@ -257,8 +263,8 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   choiceSuccess: {
-    backgroundColor: '#90ff3b',
-    shadowColor: '#90ff3b',
+    backgroundColor: '#36aa3d',
+    shadowColor: '#36aa3d',
     shadowOffset: {
       width: 0,
       height: 0,
