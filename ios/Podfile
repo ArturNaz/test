@@ -10,7 +10,7 @@ target 'test' do
 
 
   target 'testTests' do
-    inherit! :complete
+    inherit! :completeQuiz
     # Pods for testing
   end
 
