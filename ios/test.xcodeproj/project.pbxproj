@@ -194,7 +194,6 @@
 				ED2422C7DEF3A167CA6E09E1 /* Pods-test-tvOSTests.debug.xcconfig */,
 				02F1D807E13B81DAF03EF056 /* Pods-test-tvOSTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
